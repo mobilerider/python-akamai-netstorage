@@ -42,10 +42,13 @@ class Binding(object):
 
 
     def __get_url(self, cp_code, path):
-        return '%s/%s/%s' % (self.host, cp_code, path)
+        return 'http://%s/%s/%s' % (self.host, cp_code, path)
 
     def __get_headers(self, action):
-        return {'X-Akamai-ACS-Action': action}
+        return {
+            'Host': self.host,
+            'X-Akamai-ACS-Action': action
+        }
 
     def send(self, cp_code, path, params, method=Methods.GET):
         url = self.__get_url(cp_code, path)
@@ -57,7 +60,8 @@ class Binding(object):
         if method == Methods.DELETE and not self.allow_delete:
             raise AkamaiDeleteNotAllowedException()
 
-        r = requests.request(method, url, auth=AkamaiAuth(self.key, self.key_name, url, action))
+        r = requests.request(method, url, headers=self.__get_headers(action),
+                             auth=AkamaiAuth(self.key, self.key_name, url, action))
 
         return r.text
 
