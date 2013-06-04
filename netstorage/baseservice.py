@@ -27,7 +27,7 @@ class Binding(object):
     username = None
     password = None
 
-    def __init__(self, host, key, key_name, username, password):
+    def __init__(self, host, key, key_name, username=None, password=None):
         # Unique ID guarantee uniqueness for multiple headers
         # generated at the same time for multiple requests
         self.uid = randint(1, 999999999)
@@ -42,20 +42,24 @@ class Binding(object):
         # X-Akamai-ACS-Auth-Data: [version], [0.0.0.0], [0.0.0.0], [time], [unique-id], [Key-name]
         return [AKAMAI_AUTH_VERSION, '0.0.0.0', '0.0.0.0', time(), self.uid, self.key_name]
 
+    @property
+    def __auth_data_as_string(self):
+        return ', '.join(str(x) for x in self.__auth_data)
+
     def __get_sign_string(self, url, action):
         # Sign-string: URL + “\n” + “x-akamai-acs-action:” + X-Akamai-ACS-Action value + “\n”
         return '%s\nx-akamai-acs-action:%s\n' % (url, action)
 
     def __get_auth_sign(self, url, action):
         # Version 5 - HMAC-SHA256([key], [data] + [sign-string])
-        message = '%s%s' % (", ".join(self.__auth_data), self.__get_sign_string(url, action))
+        message = '%s%s' % (self.__auth_data_as_string, self.__get_sign_string(url, action))
 
         return hmac.new(self.key, msg=message, digestmod=hashlib.sha256).digest().encode('base64')
 
     def __get_headers(self, url, action):
         return {
             'X-Akamai-ACS-Action': action,
-            'X-Akamai-ACS-Auth-Data': ", ".join(self.__auth_data),
+            'X-Akamai-ACS-Auth-Data': ", ".join(self.__auth_data_as_string),
             'X-Akamai-ACS-Auth-Sign': self.__get_auth_sign(url, action)
         }
 
@@ -65,7 +69,7 @@ class Binding(object):
     def send(self, cp_code, path, params, method=Methods.GET):
         url = self.__get_url(cp_code, path)
         action = urlencode(params)
-        return requests.request(method, self.__get_url(cp_code, path), headers=self.__get_headers(url, action))
+        return requests.request(method, url, headers=self.__get_headers(url, action))
 
     # Helpers
     def du(self, params):
