@@ -53,5 +53,5 @@ class AkamaiAuth(AuthBase):
         return hmac.new(self.key, msg=message, digestmod=hashlib.sha256).digest().encode('base64')
 
     def __set_headers(self, headers):
-        headers['X-Akamai-ACS-Auth-Data'] = ", ".join(self.__auth_data_as_string)
+        headers['X-Akamai-ACS-Auth-Data'] = self.__auth_data_as_string
         headers['X-Akamai-ACS-Auth-Sign'] = self.__get_auth_sign
