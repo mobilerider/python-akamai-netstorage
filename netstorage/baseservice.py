@@ -3,14 +3,23 @@ from urllib import urlencode
 
 # Third party imports
 from netstorage.auth import AkamaiAuth
+from netstorage.exception import AkamaiInvalidMethodException, AkamaiDeleteNotAllowedException
 import requests
 
 
 class Methods(object):
-    GET = 'get'
-    PUT = 'put'
-    POST = 'post'
-    DELETE = 'delete'
+    GET = 'GET'
+    PUT = 'PUT'
+    POST = 'POST'
+    DELETE = 'DELETE'
+
+    @staticmethod
+    def get_methods():
+        return [x for x in dir(Methods) if '_' not in x]
+
+    @staticmethod
+    def validate_method(method):
+        return method in Methods.get_methods()
 
 
 class Binding(object):
@@ -27,6 +36,10 @@ class Binding(object):
         self.username = username
         self.password = password
 
+        # To ensure you will not delete a content by mistake
+        # Call allow_delete method before requesting a delete action
+        self.allow_delete = False
+
 
     def __get_url(self, cp_code, path):
         return '%s/%s/%s' % (self.host, cp_code, path)
@@ -38,9 +51,18 @@ class Binding(object):
         url = self.__get_url(cp_code, path)
         action = urlencode(params)
 
+        if not Methods.validate_method(method):
+            raise AkamaiInvalidMethodException()
+
+        if method == Methods.DELETE and not self.allow_delete:
+            raise AkamaiDeleteNotAllowedException()
+
         r = requests.request(method, url, auth=AkamaiAuth(self.key, self.key_name, url, action))
 
         return r.text
+
+    def allow_deleting(self):
+        self.allow_delete = True
 
     # Helpers
     def du(self, params):
