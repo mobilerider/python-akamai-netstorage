@@ -8,6 +8,7 @@ import requests
 # Internal imports
 from netstorage.auth import AkamaiAuth
 from netstorage.exception import *
+from netstorage.constants import AKAMAI_PROTOCOL_VERSION
 
 
 class Methods(object):
@@ -68,7 +69,16 @@ class Binding(object):
             'X-Akamai-ACS-Action': action
         }
 
+    def __check_params(self, params=None):
+        params = params or {}
+        params['version'] = params.get('version', AKAMAI_PROTOCOL_VERSION) # Ensures version param exists just in case
+        params['format'] = params.get('format', 'xml') # Ensures format param exists
+
+        if 'action' not in params:
+            raise AkamaiInvalidActionException()
+
     def send(self, cp_code, path, params, method=Methods.GET):
+        self.__check_params(params)
         cp_code = cp_code or self.cp_code
         url = self.__get_url(cp_code, path)
         relative = self.__get_relative_url(cp_code, path)
@@ -96,6 +106,7 @@ class Binding(object):
 
     # Helpers
     def du(self, cp_code, path, params=None):
+        params = params or {}
         params['action'] = Actions.DU
 
         # Making the request

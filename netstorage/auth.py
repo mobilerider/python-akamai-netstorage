@@ -51,7 +51,7 @@ class AkamaiAuth(AuthBase):
 
         # Version 5 - HMAC-SHA256([key], [data] + [sign-string])
         # Remove trailing \n character
-        return hmac.new(self.key, msg=message, digestmod=hashlib.sha256)\
+        return hmac.new(self.key, msg=message, digestmod=hashlib.sha256) \
             .digest().encode('base64').replace('=\n', '=')
 
     def __set_headers(self, headers):
