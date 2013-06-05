@@ -2,7 +2,7 @@
 # System imports
 import hmac
 import hashlib
-from random import randint
+from random import getrandbits
 from time import time
 
 # Third party imports
@@ -18,7 +18,7 @@ class AkamaiAuth(AuthBase):
     def __init__(self, key, key_name, url, action):
         # Unique ID guarantee uniqueness for multiple headers
         # generated at the same time for multiple requests
-        self.uid = randint(1, 999999999)
+        self.uid = getrandbits(32)
 
         # setup any auth-related data
         self.key = key
@@ -52,7 +52,7 @@ class AkamaiAuth(AuthBase):
         # Version 5 - HMAC-SHA256([key], [data] + [sign-string])
         # Remove trailing \n character
         return hmac.new(self.key, msg=message, digestmod=hashlib.sha256)\
-            .digest().encode('base64').replace('\n', '')
+            .digest().encode('base64').replace('=\n', '=')
 
     def __set_headers(self, headers):
         headers['X-Akamai-ACS-Auth-Data'] = self.__auth_data_as_string
