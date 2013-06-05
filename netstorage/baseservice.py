@@ -8,7 +8,7 @@ import requests
 # Internal imports
 from netstorage.auth import AkamaiAuth
 from netstorage.exception import *
-from netstorage.constants import AKAMAI_PROTOCOL_VERSION
+from netstorage.constants import AKAMAI_PROTOCOL_VERSION, AKAMAI_HOST_POSTFIX
 
 
 class Methods(object):
@@ -38,8 +38,8 @@ class Binding(object):
     password = None
     cp_code = None
 
-    def __init__(self, host, key, key_name, cp_code=None, username=None, password=None):
-        self.host = host
+    def __init__(self, account, key, key_name, cp_code=None, username=None, password=None):
+        self.host = '%s%s' % (account, AKAMAI_HOST_POSTFIX)
         self.key = key
         self.key_name = key_name
         self.cp_code = cp_code
@@ -49,7 +49,6 @@ class Binding(object):
         # To ensure you will not delete a content by mistake
         # Call allow_delete method before requesting a delete action
         self.allow_delete = False
-
 
     def __get_url(self, cp_code, path):
         url = 'http://%s/%s/%s' % (self.host, cp_code, path)
