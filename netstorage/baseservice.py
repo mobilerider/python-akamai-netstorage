@@ -34,17 +34,13 @@ class Binding(object):
     host = None
     key = None
     key_name = None
-    username = None
-    password = None
     cp_code = None
 
-    def __init__(self, account, key, key_name, cp_code=None, username=None, password=None):
+    def __init__(self, account, key, key_name, cp_code=None):
         self.host = '%s%s' % (account, AKAMAI_HOST_POSTFIX)
         self.key = key
         self.key_name = key_name
         self.cp_code = cp_code
-        self.username = username
-        self.password = password
 
         # To ensure you will not delete a content by mistake
         # Call allow_delete method before requesting a delete action
