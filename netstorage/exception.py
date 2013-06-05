@@ -9,3 +9,6 @@ class AkamaiInvalidMethodException(Exception):
 
 class AkamaiDeleteNotAllowedException(Exception):
     pass
+
+class AkamaiInvalidCpCodeException(Exception):
+    pass
