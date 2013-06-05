@@ -1,5 +1,6 @@
 # System imports
 from urllib import urlencode
+from xml.etree.ElementTree import fromstring
 
 # Third party imports
 import requests
@@ -88,12 +89,24 @@ class Binding(object):
         r = requests.request(method, url, headers=self.__get_headers(action),
                              auth=AkamaiAuth(self.key, self.key_name, relative, action))
 
-        return r.text
+        return r.text, r.status_code
 
     def allow_deleting(self):
         self.allow_delete = True
 
     # Helpers
-    def du(self, cp_code, params):
+    def du(self, cp_code, path, params=None):
         params['action'] = Actions.DU
-        return self.send(cp_code, params)
+
+        # Making the request
+        response, status = self.send(cp_code, path, params)
+
+        if status == 200:
+            try:
+                tree = fromstring(response)
+                info = tree.find('du-info').attrib
+                return {'files': info['files'], 'bytes': info['bytes']}
+            except Exception:
+                raise AkamaiResponseMalformedException()
+        else:
+            return response

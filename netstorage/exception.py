@@ -12,3 +12,6 @@ class AkamaiDeleteNotAllowedException(Exception):
 
 class AkamaiInvalidCpCodeException(Exception):
     pass
+
+class AkamaiResponseMalformedException(Exception):
+    pass
