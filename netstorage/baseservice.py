@@ -36,11 +36,12 @@ class Binding(object):
     key_name = None
     cp_code = None
 
-    def __init__(self, account, key, key_name, cp_code=None):
+    def __init__(self, account, key, key_name, cp_code=None, path=None):
         self.host = '%s%s' % (account, AKAMAI_HOST_POSTFIX)
         self.key = key
         self.key_name = key_name
         self.cp_code = cp_code
+        self.path = path
 
         # To ensure you will not delete a content by mistake
         # Call allow_delete method before requesting a delete action
@@ -74,6 +75,7 @@ class Binding(object):
 
     def send(self, cp_code, path, params, method=Methods.GET):
         self.__check_params(params)
+        path = path or self.path
         cp_code = cp_code or self.cp_code
         url = self.__get_url(cp_code, path)
         relative = self.__get_relative_url(cp_code, path)
@@ -100,7 +102,7 @@ class Binding(object):
         self.allow_delete = True
 
     # Helpers
-    def du(self, cp_code, path, params=None):
+    def du(self, cp_code=None, path=None, params=None):
         params = params or {}
         params['action'] = Actions.DU
 
