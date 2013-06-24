@@ -39,6 +39,9 @@ setup(
         'netstorage',
     ],
     include_package_data=True,
-    install_requires=[],
+    install_requires=[
+        'lxml',
+        'requests',
+    ],
     zip_safe=False,
 )
