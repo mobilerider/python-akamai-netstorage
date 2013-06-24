@@ -1,6 +1,8 @@
 # System imports
 from urllib import urlencode
-from xml.etree.ElementTree import fromstring
+from xml.etree.ElementTree import fromstring as xml_fromstring, ParseError
+from os.path import join as path_join
+from datetime import datetime
 
 # Third party imports
 import requests
@@ -28,6 +30,7 @@ class Methods(object):
 
 class Actions(object):
     DU = 'du'
+    DIR = 'dir'
 
 
 class Binding(object):
@@ -101,7 +104,12 @@ class Binding(object):
     def allow_deleting(self):
         self.allow_delete = True
 
+    #####
+    #
     # Helpers
+    #
+    #####
+
     def du(self, cp_code=None, path=None, params=None):
         params = params or {}
         params['action'] = Actions.DU
@@ -111,10 +119,62 @@ class Binding(object):
 
         if status == 200:
             try:
-                tree = fromstring(response)
+                tree = xml_fromstring(response)
                 info = tree.find('du-info').attrib
                 return {'files': info['files'], 'bytes': info['bytes']}
-            except Exception:
-                raise AkamaiResponseMalformedException()
+            except ParseError, parse_error:
+                raise AkamaiResponseMalformedException(str(parse_error))
+        else:
+            return response
+
+    def dir(self, cp_code=None, path=None, params=None):
+        params = params or {}
+        params['action'] = Actions.DIR
+
+        # Making the request
+        response, status = self.send(cp_code, path, params)
+
+        # Transform the element into a well know dict format
+        # It will look for these attributes:
+        # 'type', 'name', 'mtime' and, if present, also include the
+        # 'size', 'target' attributes
+        def dir_action_entry(element):
+            attribs = dict(**element.attrib)
+            entry = {
+                'type': attribs['type'],
+                'name': attribs['name'],
+                'mtime': attribs['mtime'],
+                'path': path_join(path, attribs['name']) if path else attribs['name']
+            }
+
+            # Optional keys
+            for k in ('size', 'target', ):
+                try:
+                    entry[k] = attribs[k]
+                except KeyError:
+                    pass
+
+            # Integer keys
+            for k in ('size', 'mtime', ):
+                try:
+                    entry[k] = int(entry[k])
+                except (KeyError, ValueError, ):
+                    pass
+
+            # Datetime keys
+            for k in ('mtime', ):
+                try:
+                    entry[k] = datetime.fromtimestamp(entry[k])
+                except (KeyError, ValueError, ):
+                    pass
+
+            return entry
+
+        if status == 200:
+            try:
+                tree = xml_fromstring(response)
+                return [dir_action_entry(element) for element in tree.findall('file')]
+            except ParseError, parse_error:
+                raise AkamaiResponseMalformedException(str(parse_error))
         else:
             return response
