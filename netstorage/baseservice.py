@@ -124,6 +124,10 @@ class Binding(object):
                 return {'files': info['files'], 'bytes': info['bytes']}
             except ParseError, parse_error:
                 raise AkamaiResponseMalformedException(str(parse_error))
+        elif status == 403:
+            raise AkamaiForbiddenException((cp_code or self.cp_code, path, response, status, ))
+        elif status == 404:
+            raise AkamaiFileNotFoundException((cp_code or self.cp_code, path, response, status, ))
         else:
             return response
 
