@@ -121,7 +121,7 @@ class Binding(object):
             try:
                 tree = xml_fromstring(response)
                 info = tree.find('du-info').attrib
-                return {'files': info['files'], 'bytes': info['bytes']}
+                return {'files': int(info['files']), 'bytes': int(info['bytes'])}
             except ParseError, parse_error:
                 raise AkamaiResponseMalformedException(str(parse_error))
         else:
