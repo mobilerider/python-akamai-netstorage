@@ -1,26 +1,38 @@
-class AkamaiInvalidRequestParamsException(Exception):
+class AkamaiError(Exception):
     pass
 
 
-class AkamaiServiceException(Exception):
+class AkamaiInvalidRequestParamsException(AkamaiError):
     pass
 
 
-class AkamaiInvalidMethodException(Exception):
+class AkamaiServiceException(AkamaiError):
     pass
 
 
-class AkamaiDeleteNotAllowedException(Exception):
+class AkamaiInvalidMethodException(AkamaiError):
     pass
 
 
-class AkamaiInvalidCpCodeException(Exception):
+class AkamaiDeleteNotAllowedException(AkamaiError):
     pass
 
 
-class AkamaiResponseMalformedException(Exception):
+class AkamaiInvalidCpCodeException(AkamaiError):
     pass
 
 
-class AkamaiInvalidActionException(Exception):
+class AkamaiResponseMalformedException(AkamaiError):
+    pass
+
+
+class AkamaiInvalidActionException(AkamaiError):
+    pass
+
+
+class AkamaiFileNotFoundException(AkamaiError):
+    pass
+
+
+class AkamaiForbiddenException(AkamaiError):
     pass
