@@ -180,5 +180,9 @@ class Binding(object):
                 return [dir_action_entry(element) for element in tree.findall('file')]
             except ParseError, parse_error:
                 raise AkamaiResponseMalformedException(str(parse_error))
+        if status == 403:
+            raise AkamaiForbiddenException((cp_code or self.cp_code, path, response, status, ))
+        if status == 404:
+            raise AkamaiFileNotFoundException((cp_code or self.cp_code, path, response, status, ))
         else:
             return response
